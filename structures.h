@@ -1,28 +1,24 @@
-# ajouter les ifndef et define dans les dossiers .h pour éviter les boucles infinies
+#ifndef _STRUCTURE_H
+#define _STRUCTURE_H
 
-# chaque lexeme est une chaine de caractère avec un numéro d indentifiant, numéro de ligne
 
-struct LEXEME{
+struct LEXEME{                           // chaque lexeme est une chaine de caractère avec un numéro d indentifiant, numéro de ligne
   int identifiant;
-  int ligne
+  int ligne;
   char* chaine;
-  int valeur
+  int valeur;                            // si c'est un nombre
 };
 
 
-struct LISTE_LEXEME{
-
+struct LISTE_LEXEME{                 // chaine de lexeme 
+  LEXEME val;
+  LEXEME* suiv ;
 };
 
 
-init, virgule, hexa, decima, symbol, :, (, ), NL, registre, directives, #
 
 
 
-
-
-
-
-
+#endif
 
 
