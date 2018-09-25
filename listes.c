@@ -55,3 +55,16 @@ LEXEME  obtenir_tete(LISTE_LEXEME L) {
 }
 
 
+
+LISTE_LEXEME supp_tete(LISTE_LEXEME L) {
+    LISTE_LEXEME psuiv = NULL; // toujours bien d'initialiser les pointeurs des leur declaration...
+
+    // cas particulier
+    if(est_vide(L)) {
+        return NULL;
+    }
+    // cas general. On a besoin de stocker l'adresse du maillon suivant
+    psuiv = L->suiv;
+    free(L);
+    return psuit;
+}
