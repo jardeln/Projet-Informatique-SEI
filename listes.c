@@ -13,7 +13,11 @@ int est_vide(LISTE_LEXEME L) {
     return L == NULL;
 }
 
-LISTE_LEXEME  ajout_tete(LEXEME lexeme, LISTE_LEXEME L) {
+
+LISTE_LEXEME ajout(char* string, int id, LISTE_LEXEME L){    //prend la chaine de caractère et sa catégorie et crée lexeme 
+    struct LEXEME lexeme;                                    // puis l'empile à la liste de lexeme
+    lexeme.identifiant= id;
+    lexeme.chaine= string;                                   // ATTRIBUTION D' UN POINTEUR ?????
     struct suiv * pm = calloc(1, sizeof( * pm )) ;
     if(pm == NULL) {
         printf("erreur allocation ajout tete\n");
