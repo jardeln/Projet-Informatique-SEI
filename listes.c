@@ -5,12 +5,8 @@
 #include "listes.h"
 
 
-LISTE_LEXEME creer_liste(void) {
+liste_t creer_liste(void) {
     return NULL;
-}
-
-int est_vide(LISTE_LEXEME L) {
-    return L == NULL;
 }
 
 
@@ -18,7 +14,7 @@ LISTE_LEXEME ajout(char* string, int id, LISTE_LEXEME L){    //prend la chaine d
     struct LEXEME lexeme;                                    // puis l'empile à la liste de lexeme
     lexeme.identifiant= id;
     lexeme.chaine= string;                                   // ATTRIBUTION D' UN POINTEUR ?????
-    struct suiv * pm = calloc(1, sizeof( * pm )) ;
+    struct LEXEME * pm = calloc(1, sizeof( * pm )) ;
     if(pm == NULL) {
         printf("erreur allocation ajout tete\n");
         return NULL;
