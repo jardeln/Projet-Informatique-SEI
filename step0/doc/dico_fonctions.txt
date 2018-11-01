@@ -1,0 +1,44 @@
+26
+ADD 3 R R R
+ADDI 3 R R D
+AND 3 R R R
+BEQ 3 R R O
+BGTZ 2 R O
+BLEZ 2 R O
+BNE 3 R R O
+DIV 2 R R
+J 1 O
+JAL 1 O
+JR 1 R
+LUI 2 R I
+LW 2 R O
+MFHI 1 R
+MFLO 1 R
+MULT 2 R R
+NOP 0 
+OR 3 R R R
+ROTR 3 R R S
+SLL 3 R R S
+SLT 3 R R R
+SRL 3 R R S
+SUB 3 R R R
+SW 2 R O
+SYSCALL 0
+XOR 3  R R R
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
