@@ -12,7 +12,7 @@
 #include <liste.h>
 
 enum{INITS,TEXTS,DATAS,BSSS};
-enum{INI,REG,OFFSET_DECI,OFFSET_HEXA,OFFSET,DECI,HEXA,ETIQUETTE, VIRGULE};
+enum{INI,REG,OFFSET_DECI,OFFSET_HEXA,OFFSET,DECI,HEXA,ETIQUETTE, VIRGULE, CHAINE};
 
 /*
 int HexaDec(char* chaine)  /// Transforme une chaine de caractère d'Hexa en Décimal
@@ -30,7 +30,12 @@ int HexaDec(char* chaine)  /// Transforme une chaine de caractère d'Hexa en Dé
 	printf("dec = %d\n",dec);
 	return dec;
 }
+
+
+
 */
+
+
 
 LISTE_LEXEME* Instruction(LISTE_LEXEME* Liste, COLLEC_TEXT* Collec_instruc, int NIsnt, DICO* dictionary)/*ajoute une migne en vérifiant que les instructions sont bonnes et bien formulées*/
 {
@@ -42,12 +47,12 @@ LISTE_LEXEME* Instruction(LISTE_LEXEME* Liste, COLLEC_TEXT* Collec_instruc, int 
 	printf("42\n");
 	if ( (i = ChercInst(dictionary, Liste->val.chaine, NIsnt))==-1) ERROR_MSG("Erreur Instruction non valide ligne %d : \"%s\"\n",Liste->val.ligne, Liste->val.chaine);
 	else
-	{	
+	{
 		printf("46\n");
 		chaine = Liste->val.chaine;
 		NB_op = dictionary[i].nb_ope;
 		printf("NB_op : %d\n", NB_op);
-		/*traiter le décalage*/
+		
 		Liste = Liste->suiv;
 		while(strcmp(Liste->val.chaine,"\n")!=0)
 		{
@@ -86,7 +91,7 @@ LISTE_LEXEME* Instruction(LISTE_LEXEME* Liste, COLLEC_TEXT* Collec_instruc, int 
 					break;
 				case OFFSET:
 					puts("OFFSET");
-					if (OpAttendue(dictionary,i,S,counter,Liste)==1) 
+					if (OpAttendue(dictionary,i,S,counter,Liste)==1)
 					{
 						/*EcritureOP(counter,&instru, Liste);*/
 						if (Liste->suiv->suiv->val.identifiant == 8 && Liste->suiv->suiv->suiv->val.identifiant == 11)
@@ -96,7 +101,7 @@ LISTE_LEXEME* Instruction(LISTE_LEXEME* Liste, COLLEC_TEXT* Collec_instruc, int 
 						S = VIRGULE;
 						}
 						else ERROR_MSG("Erreur il faut une parentèse ou une vigule ligne %d\n",	Liste->val.ligne);
-					}	
+					}
 					break;
 				case ETIQUETTE:
 					puts("ETIQUETTE");
@@ -108,7 +113,7 @@ LISTE_LEXEME* Instruction(LISTE_LEXEME* Liste, COLLEC_TEXT* Collec_instruc, int 
 					break;
 				case VIRGULE:
 					puts("VIRGULE");
-					if (Liste->val.identifiant == 7 && counter%2==0 && strcmp(Liste->val.chaine,"\n")!=0) {S = INI; Liste = Liste->suiv; counter++;} /* c'est une virgule, on */
+					if (Liste->val.identifiant == 7 && counter%2==0 && strcmp(Liste->suiv->val.chaine,"\n")!=0) {S = INI; Liste = Liste->suiv; counter++;} /* c'est une virgule, on */
 					 	/*vérifie si elle est bien en positionné après une oppérande donc counter pair et si elle n'est pas en fin de ligne*/
 					else ERROR_MSG("Erreur il manque peut etre une virgule ligne %d\n", Liste->val.ligne);
 					break;
@@ -123,7 +128,7 @@ LISTE_LEXEME* Instruction(LISTE_LEXEME* Liste, COLLEC_TEXT* Collec_instruc, int 
 	/*fonction de mathis pour empiler sur collec*/
 	return Liste;
 }
-					
+
 void EcritureOP(int counter, TEXT* instru, LISTE_LEXEME* Liste)
 {
 	if (counter == 1) printf("ecriture ope 1\n");			/*fonction mathis*/
@@ -131,7 +136,7 @@ void EcritureOP(int counter, TEXT* instru, LISTE_LEXEME* Liste)
 	else if (counter == 5) printf("ecriture ope 3\n");		/*fonction mathis*/
 	else ERROR_MSG("Erreur nombre d'oppérandes invalides ligne %d \n",Liste->val.ligne);
 }
-		
+
 int OpAttendue(DICO* dictionary, int i, int S, int counter, LISTE_LEXEME* Liste)
 {
 	printf("i : %d, S : %d, counter : %d\n",i, S, counter);
@@ -170,7 +175,7 @@ int ChercInst(DICO* dictionary, char* chaine, int N) /*fonction qui prend en arg
 	while (i<N-1)/*-1 sinon core dumpted*/
 	{
 		printf("dictionary[%d] : %s\n",i, dictionary[i].inst);
-		if (strcmp(dictionary[i].inst, chaine)==0) 
+		if (strcmp(dictionary[i].inst, chaine)==0)
 		{
 			printf("i = %d\n",i);
 			return i;
@@ -180,6 +185,145 @@ int ChercInst(DICO* dictionary, char* chaine, int N) /*fonction qui prend en arg
 	printf("i = %d\n",i);
 	return -1;
 }
+
+
+
+LISTE_LEXEME* Datas(LISTE_LEXEME* Liste, COLLEC_DATA* Collec_data)
+{
+	char* directive;
+	int S = INI;
+	int counter = 1;
+	if(strcmp(Liste->val.chaine,".word")==0)
+	{
+		directive = Liste->val.chaine;
+		Liste = Liste->suiv;
+		while(strcmp(Liste->val.chaine,"\n")!=0)
+		{
+			switch(S)
+			{
+				case INI:
+					if (Liste->val.identifiant == 6) S = DECI;
+					else if (Liste->val.identifiant == 9) S = HEXA;
+					else ERROR_MSG("Erreur opérande invalide ligne %d : \"%s\"\n",Liste->val.ligne,Liste->val.chaine);
+					break;
+				case DECI:
+					if (atoi(Liste->val.chaine)<=4294967295)
+					{
+						/* fonction de mathis pour les opérandes data*/
+						Liste = Liste->suiv;
+						S = VIRGULE;
+						counter++;
+					}
+					else ERROR_MSG("Opérande trop grande pour .word, ligne %d : \"%s\"\n",Liste->val.ligne,Liste->val.chaine); 
+					break;
+				case HEXA:
+					/*fonction pour transformer l'hexa en décimal*/
+					if (atoi(Liste->val.chaine)<=4294967295)
+					{
+						/* fonction de mathis pour les opérandes data*/
+						Liste = Liste->suiv;
+						S = VIRGULE;
+						counter++;
+					}
+					else ERROR_MSG("Opérande trop grande pour .word, ligne %d : \"%s\"\n",Liste->val.ligne,Liste->val.chaine); 
+					break;
+				case VIRGULE:
+					if (Liste->val.identifiant == 7 && strcmp(Liste->suiv->val.chaine,"\n")!=0) {S = INI; Liste = Liste->suiv;} /* c'est une virgule, on */
+					 	/*vérifie si elle est bien en positionné après une oppérande donc counter pair et si elle n'est pas en fin de ligne*/
+					else ERROR_MSG("Erreur il manque peut etre une virgule ligne %d\n", Liste->val.ligne);
+					break;
+			}	
+		}
+		/*fonction mathis pour stocker dans collec data*/
+	}
+	else if (strcmp(Liste->val.chaine,".space")==0 && strcmp(Liste->suiv->suiv->val.chaine,"\n")==0)
+	{
+		directive = Liste->val.chaine;
+		Liste = Liste->suiv;
+		if (Liste->val.identifiant == 6) 
+		{
+			/* fonction de mathis pour les opérandes data*/
+			Liste = Liste->suiv;
+			S = VIRGULE;
+			counter++;
+		}
+		else ERROR_MSG("Erreur opérande invalide ligne %d : \"%s\"\n",Liste->val.ligne,Liste->val.chaine);
+	}
+	else if (strcmp(Liste->val.chaine,".byte")==0)
+	{
+		directive = Liste->val.chaine;
+		Liste = Liste->suiv;
+		while(strcmp(Liste->val.chaine,"\n")!=0)
+		{
+			switch(S)
+			{
+				case INI:
+					if (Liste->val.identifiant == 6) S = DECI;
+					else if (Liste->val.identifiant == 9) S = HEXA;
+					else ERROR_MSG("Erreur opérande invalide ligne %d : \"%s\"\n",Liste->val.ligne,Liste->val.chaine);
+					break;
+				case DECI:
+					if (atoi(Liste->val.chaine)<=255)
+					{
+						/* fonction de mathis pour les opérandes data*/
+						Liste = Liste->suiv;
+						S = VIRGULE;
+						counter++;
+					}
+					else ERROR_MSG("Opérande trop grande pour .byte, ligne %d : \"%s\"\n",Liste->val.ligne,Liste->val.chaine); 
+					break;
+				case HEXA:
+					/*fonction pour transformer l'hexa en décimal*/
+					if (atoi(Liste->val.chaine)<=255)
+					{
+						/* fonction de mathis pour les opérandes data*/
+						Liste = Liste->suiv;
+						S = VIRGULE;
+						counter++;
+					}
+					else ERROR_MSG("Opérande trop grande pour .byte, ligne %d : \"%s\"\n",Liste->val.ligne,Liste->val.chaine); 
+					break;
+				case VIRGULE:
+					if (Liste->val.identifiant == 7 && strcmp(Liste->suiv->val.chaine,"\n")!=0) {S = INI; Liste = Liste->suiv;} /* c'est une virgule, on */
+					 	/*vérifie si elle est bien en positionné après une oppérande donc counter pair et si elle n'est pas en fin de ligne*/
+					else ERROR_MSG("Erreur il manque peut etre une virgule ligne %d\n", Liste->val.ligne);
+					break;
+			}	
+		}
+		/*fonction mathis pour stocker dans collec data*/
+	}
+	else if (strcmp(Liste->val.chaine,".asciiz")==0)
+	{
+		directive = Liste->val.chaine;
+		Liste = Liste->suiv;
+		while(strcmp(Liste->val.chaine,"\n")!=0)
+		{
+			switch(S)
+			{
+				case INI:
+					if (Liste->val.identifiant == 12) S = CHAINE;
+					else ERROR_MSG("Erreur opérande invalide ligne %d : \"%s\"\n", Liste->val.ligne, Liste->val.chaine);
+					break;
+				case CHAINE:
+					/* fonction de mathis */
+					Liste = Liste->suiv;
+					S = VIRGULE;
+					counter++;
+					break;
+				case VIRGULE:
+					if (Liste->val.identifiant == 7 && strcmp(Liste->suiv->val.chaine,"\n")!=0) {S = INI; Liste = Liste->suiv;} /* c'est une virgule, on */
+					 	/*vérifie si elle est bien en positionné après une oppérande donc counter pair et si elle n'est pas en fin de ligne*/
+					else ERROR_MSG("Erreur il manque peut etre une virgule ligne %d\n", Liste->val.ligne);
+					break;
+			}
+		}
+		/*fonction de mathis*/
+	}
+	else ERROR_MSG("Erreur directive invalide ligne %d : \"%s\"\n",Liste->val.ligne, Liste->val.chaine);
+	return Liste;
+}
+
+
 
 DICO* Dico(FILE* file, int* pNInst)
 {
@@ -240,11 +384,11 @@ DICO* Dico(FILE* file, int* pNInst)
 	}
 	printf("Création du dictionnaire réussi !\n");
 	return tab;
-}	
+}
 
 void Gram(LISTE_LEXEME* Liste)
 {
-	
+
 	LISTE_LEXEME* Lcopie = Liste; 	/*pas sur que ca serve*/
 	COLLEC_TEXT* Collec_instruc = NULL;
 	int S = INITS;
@@ -262,7 +406,7 @@ void Gram(LISTE_LEXEME* Liste)
     	printf("229 dictionary = %s\n", dictionary[2].inst);
     	printf("230 dictionary = %s\n", dictionary[3].inst);
     	fclose(file); /*le tableau est créé on peut fermer le fichier*/
-	while(Lcopie != NULL)	
+	while(Lcopie != NULL)
 	/*ouverture du fichier symboles et Tableux de symbole, fermet le fichier*/
 	{
 		switch(S)
@@ -280,6 +424,7 @@ void Gram(LISTE_LEXEME* Liste)
 			case TEXTS:
 				puts("TEXTS");
 				if (strcmp(Lcopie->val.chaine,".data")==0) {S = DATAS; }
+				else if (strcmp(Lcopie->val.chaine,".bss")==0) {S = BSSS; printf(".bss\n");}
 				else if (Lcopie->val.identifiant == 3 && Lcopie->suiv->val.identifiant == 4){S = TEXTS;}
 				else if (Lcopie->val.identifiant == 3) {S = TEXTS;Lcopie = Instruction(Lcopie, Collec_instruc, NInst, dictionary);}/*lancer une fonction qui prend en argument Lcopie et Linst et retourne Lcopie de la ligne suivante*/
 				else if (Lcopie->val.identifiant == 1 || strcmp(Lcopie->val.chaine,"\n")==0 || strcmp(Lcopie->val.chaine,":")==0) S = TEXTS;
@@ -287,17 +432,20 @@ void Gram(LISTE_LEXEME* Liste)
 				break;
 			case DATAS:
 				puts("DATAS");
-				if (strcmp(Lcopie->val.chaine,".bss")==0) S = BSSS;
+				if(strcmp(Lcopie->val.chaine,".text")==0) {S = TEXTS;}
+				else if (strcmp(Lcopie->val.chaine,".bss")==0) S = BSSS;
 				else if (Lcopie->val.identifiant == 1 || strcmp(Lcopie->val.chaine,"\n")==0 || strcmp(Lcopie->val.chaine,":")==0) S = DATAS;/*lancer une fonction qui prend en argument Lcopie */
 				else if (Lcopie->val.identifiant == 5 ) {S = DATAS;}/*et Ldata et retourne Lcopie de la ligne suivante, pensez à prendre en et qui retourne possiblement Ldata*/
-				else if (Lcopie->val.identifiant == 3 && Lcopie->suiv->val.identifiant == 4){S = DATAS;}/* c'est une étiquette donc faire appelle à une foction qui prend en argument L'addresse*/ 
+				else if (Lcopie->val.identifiant == 3 && Lcopie->suiv->val.identifiant == 4){S = DATAS;}/* c'est une étiquette donc faire appelle à une foction qui prend en argument L'addresse*/
 				else ERROR_MSG("Erreur ligne %d présence de \"%s\" non comforme",Lcopie->val.ligne,Lcopie->val.chaine);/*de la table de hachage et Lcopie*//* et qui retourne possiblement Ldata*/
 				break;
 			case BSSS:
 				puts("BSS");
-				if (strcmp(Lcopie->val.chaine,".space")==0) {S = BSSS;} /*lancer un fonction qui prend en argument Lcopie et Lbss et retourne Lcopie de la ligne suivant*/
+				if (strcmp(Lcopie->val.chaine,".data")==0) {S = DATAS;}
+				else if(strcmp(Lcopie->val.chaine,".text")==0) {S = TEXTS;}
+				else if (strcmp(Lcopie->val.chaine,".space")==0) {S = BSSS;} /*lancer un fonction qui prend en argument Lcopie et Lbss et retourne Lcopie de la ligne suivant*/
 				else if (Lcopie->val.identifiant == 1 || strcmp(Lcopie->val.chaine,"\n")==0 || strcmp(Lcopie->val.chaine,":")==0) S = BSSS;
-				else if (Lcopie->val.identifiant == 3){S = DATAS;}/* c'est une étiquette donc faire appelle à une foction qui prend en argument L'addresse de la table de hachage et Lcopie*/
+				else if (Lcopie->val.identifiant == 3){S = BSSS;}/* c'est une étiquette donc faire appelle à une foction qui prend en argument L'addresse de la table de hachage et Lcopie*/
 				else ERROR_MSG("Erreur ligne %d présence de \"%s\" non comforme",Lcopie->val.ligne,Lcopie->val.chaine);/* et qui retourne possiblement Ldata*/
 				break;
 		}
